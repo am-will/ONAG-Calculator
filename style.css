@@ -515,3 +515,7 @@ footer a {
 footer a:hover {
     color: rgb(150, 31, 31);
 }
+
+footer h3 {
+    color: white;
+}
