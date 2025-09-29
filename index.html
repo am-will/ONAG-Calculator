@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ONAG Backfocus Calculator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header-bar">
+            <div>
+                <h1>🔭 ONAG Backfocus Calculator</h1>
+                <p class="subtitle">Configure telescope backfocus with Innovations Foresight ONAG (SC and XM) for parfocal spacing on any setup</p>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="dark_mode_toggle" checked>
+                <span class="slider round"></span>
+                <p>Darkness</p>
+            </label>
+            <!-- <label class="dark-toggle">
+                <input type="checkbox" id="dark_mode_toggle">
+                <span>Dark mode</span>
+            </label> -->
+        </div>
+
+        <div class="controls">
+            <label class="control">
+                <span>Available Telescope Backfocus (mm)</span>
+                <input type="number" id="telescope_backfocus" value="260.096" step="0.1">
+            </label>
+        </div>
+
+        <div class="summary-grid">
+            <div class="summary-card">
+                <h4>Available Backfocus</h4>
+                <div class="value" id="summary_backfocus">260.10 mm</div>
+            </div>
+            <div class="summary-card">
+                <h4>Main Spacer</h4>
+                <div class="value" id="summary_main_spacer">-</div>
+            </div>
+            <div class="summary-card">
+                <h4>Parfocal Adjustment</h4>
+                <div class="value" id="summary_parfocal">-</div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <div class="section">
+                <h2>🔄 Main Spacer Calculator</h2>
+
+                <div class="model-selector">
+                    <div class="model-option selected" data-model="SC" onclick="selectONAGModel('SC', event)">
+                        <strong>ONAG SC</strong><br>
+                        <small>OIBF: 66mm, BFO: 24mm</small>
+                    </div>
+                    <div class="model-option" data-model="XM" onclick="selectONAGModel('XM', event)">
+                        <strong>ONAG XM</strong><br>
+                        <small>OIBF: 68mm, BFO: 33mm</small>
+                    </div>
+                </div>
+
+                <input type="hidden" id="onag_model" value="SC">
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Component</th>
+                            <th>Distance (mm)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="onag_table_body">
+                        <tr id="onag_component_anchor">
+                            <td colspan="2"><em>Add components that contribute to backfocus such as spacers, adapters, focusers, or other hardware specific to your setup by clicking the blue plus sign +.</em></td>
+                        </tr>
+                        <tr id="onag_optical_row">
+                            <td>OIBF: ONAG Optical Backfocus</td>
+                            <td id="onag_optical">66 mm</td>
+                        </tr>
+                        <tr id="onag_ibf_row">
+                            <td class="ibf-label">
+                                <span>IBF: Imager Backfocus (After ONAG)</span>
+                                <button type="button" id="add_component_button" class="icon-button" aria-label="Add component" title="Add component">+</button>
+                            </td>
+                            <td><input type="number" id="onag_ibf" value="38.5" step="0.1" title="Include the dovetail adapter that connects your camera to ONAG"> mm</td>
+                        </tr>
+                        <tr class="spacer-row">
+                            <td>📐 Required Additional Spacer (before ONAG)</td>
+                            <td><strong id="onag_main_spacer">-</strong></td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>Total Backfocus Used</td>
+                            <td id="onag_total">-</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div id="onag_main_result" class="result"></div>
+                <div id="definitions">
+                    <h3>Notes:</h3>
+                    <ul>
+                        <li>IBF (Imager Backfocus) should include your filter wheel and any other adapters used to connect the camera to the ONAG's imager port.</li>
+                        <li>Components from the "Main Spacer" calculator are ONLY concerned with the spacing before the ONAG.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🎯 Camera Spacing Calculator</h2>
+
+                <div class="info-box">
+                    <strong>Parfocal Requirement:</strong> For both cameras to be at focus simultaneously through the ONAG,
+                    the Differential Back Focus (DBF = IBF - GBF) must equal the ONAG's Back Focus Offset (BFO).
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <h3>Camera Backfocus Inputs</h3>
+
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Imager Backfocus (IBF)</strong><br>
+                                        <small>Distance from imager sensor to ONAG IP</small></td>
+                                    <td><input type="number" id="parfocal_ibf" value="38.5" step="0.1" title="Include the dovetail adapter that connects your camera to ONAG"> mm</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Guider Backfocus (GBF)</strong><br>
+                                        <small>Distance from guider sensor to ONAG GP</small></td>
+                                    <td><input type="number" id="parfocal_gbf" value="19" step="0.1"> mm</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="checkbox-group">
+                            <label>
+                                <input type="checkbox" id="astigmatism_corrector">
+                                Using astigmatism corrector at guider port
+                            </label>
+                            <br>
+                            <small>Reduces BFO by 3mm, increases DBF by 3mm</small>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3>Parfocal Analysis</h3>
+
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <td><strong>ONAG Model Constants</strong></td>
+                                    <td id="onag_constants">-</td>
+                                </tr>
+                                <tr>
+                                    <td>OIBF (Scope Port → Imager Port)</td>
+                                    <td id="par_oibf">66 mm</td>
+                                </tr>
+                                <tr>
+                                    <td>OGBF (Scope Port → Guider Port)</td>
+                                    <td id="par_ogbf">90 mm</td>
+                                </tr>
+                                <tr>
+                                    <td>BFO (OGBF - OIBF)</td>
+                                    <td id="par_bfo">24 mm</td>
+                                </tr>
+                                <tr class="parfocal-row">
+                                    <td><strong>Your DBF (IBF - GBF)</strong></td>
+                                    <td><strong id="par_dbf">-</strong></td>
+                                </tr>
+                                <tr class="parfocal-row">
+                                    <td><strong>Adjusted Values</strong></td>
+                                    <td id="par_adjusted">-</td>
+                                </tr>
+                                <tr class="spacer-row">
+                                    <td><strong>📐 Parfocal Spacer Required</strong></td>
+                                    <td><strong id="parfocal_spacer">-</strong></td>
+                                </tr>
+                                <tr>
+                                    <td>Helical Focuser Range</td>
+                                    <td id="helical_status">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div id="parfocal_result" class="result"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="index.js" defer></script>
+</body>
+<footer>We are not affiliated with Innovations Foresight. This open source calculator is community built and managed. Feed free to suggest or create improvements on Github</footer>
+</html>
