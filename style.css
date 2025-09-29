@@ -507,3 +507,11 @@ footer {
     margin-top: 40px;
     text-align: center;
 }
+
+footer a {
+    color: rgb(168, 168, 14);
+}
+
+footer a:hover {
+    color: rgb(150, 31, 31);
+}
